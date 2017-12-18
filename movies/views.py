@@ -24,6 +24,7 @@ class MoviesView(APIView):
                 return Response(serialize_move.data)
             return Response(serialize_move.errors, status=HTTP_400_BAD_REQUEST)
         return Response(serialize_move.errors, status=HTTP_400_BAD_REQUEST)
+
 class MovieView(APIView):
     def get_object(self, pk):
         try:
@@ -39,3 +40,11 @@ class MovieView(APIView):
         selected_movie = self.get_object(id)
         selected_movie.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+    
+    def put(self, request, id):
+        selected_movie = self.get_object(id)
+        movie_serializer = MovieAddSerializer(selected_movie, request.data)
+        if movie_serializer.is_valid():
+            movie = movie_serializer.save()
+            return Response(movie_serializer.data)
+        return Response(movie_serializer.errors, status=HTTP_400_BAD_REQUEST)
