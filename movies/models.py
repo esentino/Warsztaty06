@@ -9,7 +9,8 @@ class Person(models.Model):
 class Movie(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    director = models.ForeignKey(Person, related_name="movie_director", on_delete=None)
+    #Reżyser może być nieustawiony a w przypadku usunięcia Reżysera zostaje usunięty powiązanie z filmem
+    director = models.ForeignKey(Person, related_name="movie_director", on_delete=models.SET_NULL, null=True)
     actors = models.ManyToManyField(Person, through='MoviePerson', related_name="aktorzy")
     year = models.IntegerField()
 
