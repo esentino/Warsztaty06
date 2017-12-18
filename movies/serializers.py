@@ -3,6 +3,11 @@ from rest_framework import serializers
 from django.db import IntegrityError
 from .models import Movie, Person, MoviePerson
 
+class PersonIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Person
+        fields = ('id',)
+
 class PersonSerializer(serializers.ModelSerializer):
     """Serializer for Person model"""
     class Meta:
