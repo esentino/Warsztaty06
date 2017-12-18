@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Movie, Person, MoviePerson
-
+from django.db import IntegrityError
 
 class PersonSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -24,6 +24,14 @@ class MovieSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('title', 'description', 'year', 'director', 'actors')
 
 class MovieAddSerializer(serializers.HyperlinkedModelSerializer):
+    director_id = serializers.IntegerField()
     class Meta:
         model = Movie
         fields = ('title', 'description', 'year', 'director_id')
+    def create(self, validated_data):
+        nowy = Movie(**validated_data)
+        try:
+            nowy.save()
+        except IntegrityError:
+            return nowy
+        return nowy
