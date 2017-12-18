@@ -20,7 +20,7 @@ class MoviesView(APIView):
         serialize_move = MovieAddSerializer(data=request.data)
         if serialize_move.is_valid():
             movie = serialize_move.save()
-            if movie is not None:
+            if movie.pk is not None:
                 return Response(serialize_move.data)
             return Response(serialize_move.errors, status=HTTP_400_BAD_REQUEST)
         return Response(serialize_move.errors, status=HTTP_400_BAD_REQUEST)
