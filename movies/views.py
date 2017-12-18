@@ -1,50 +1,96 @@
-from django.shortcuts import render
+"""View modules"""
+from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
-from django.http import Http404
 from .models import Movie, Person
-from .serializers import MovieSerializer, MovieAddSerializer, PersonSerializer, PersonIdSerializer
-# Create your views here.
+from .serializers import MovieSerializer, PersonSerializer
 
 
 class MoviesView(APIView):
+    """Movies View"""
     def get(self, request, format=None):
+        """Zwraca listę filmów"""
+
+        #Pobieramy wszystkie filmy z naszej bazy danych
         all_movie = Movie.objects.all()
-        serialize_movie = MovieSerializer(all_movie, 
-                                          context={"request": request}, 
+        #Serializujemy nasze filmy. Domyślnie ModelSerializer za pierwszy
+        #parametr przyjmuję objekt klasy. Ustawienie many na True powoduje,
+        #że jest on wstanie zserializować QuerySet do jsona
+        serialize_movie = MovieSerializer(all_movie,
+                                          context={"request": request},
                                           many=True)
+        #Zwracamy przy użyciu obiektu klasy Response jsonową odpowiedź.
         return Response(serialize_movie.data)
-    
-    def post(self, request, format=None):
+
+
+    def post(self, request):
+        """Dodaje nowy film do bazy danych"""
+
+        #Serializujemy dane otrzymaje w poście do MovieSerializer-a
         serialize_move = MovieSerializer(data=request.data)
+        #Sprawdzamy dane są poprawne
         if serialize_move.is_valid():
+            #Zapisujemy nowy obiekt do bazy danych
             serialize_move.save()
+            #Zwracany zapisany model
             return Response(serialize_move.data)
+        #Jeśli walidacja nie przebiegnie pozytywnie zwracamy 400 z informacją
+        # o błędach
         return Response(serialize_move.errors, status=HTTP_400_BAD_REQUEST)
 
+
 class MovieView(APIView):
+    """MovieView - klasa odpowiedzialna za wyświetlanie pojedycznego rekordu
+       z bazy danych, jego usunięcie i aktualizację"""
+
     def get_object(self, pk):
+        """Pobiera film o zadanym id lub zwraca wyjątek w przypadku braku"""
         try:
             return Movie.objects.get(pk=pk)
         except Movie.DoesNotExist:
             raise Http404
+
+
     def get(self, request, id):
+        """Zwracanie filmu o podanym id w przypadku braku 404"""
+
+        #Pobieramy film
         selected_movie = self.get_object(id)
+        #Serializujemy film
         movie_serializer = MovieSerializer(selected_movie,
                                            context={"request": request})
+        #Wracamy odpowiedź
         return Response(movie_serializer.data)
+
+
     def delete(self, request, id):
+        """Metoda odpowiedzialna za usunięcie filmu z bazy danych"""
+
+        #Odnajdujemy film w bazie danych
         selected_movie = self.get_object(id)
+        #Usuwamy go
         selected_movie.delete()
+        #Wzracamy w przypadku sukcesu 204, bez treści
         return Response(status=HTTP_204_NO_CONTENT)
-    
+
+
     def put(self, request, id):
+        """Aktualizacja filmu"""
+
+        #Pobieramy objekt filmu z bazy danych
         selected_movie = self.get_object(id)
+
+        #Przekazujemy do serializera obiekt filmy oraz dane żądania http
         movie_serializer = MovieSerializer(selected_movie, request.data)
+
+        #Sprawdzamy czy dane są poprawne        
         if movie_serializer.is_valid():
+            #Zapisujemy dane
             movie_serializer.save()
+            #zwracamy zaktualizowane informacje o filmie
             return Response(movie_serializer.data)
+        #Jak coś nie udało się zwalidować to zwracamy informacje o będzie
         return Response(movie_serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class PersonView(APIView):
