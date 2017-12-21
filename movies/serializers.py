@@ -28,7 +28,7 @@ class PersonRoleSerializer(serializers.ModelSerializer):
 
 class MovieSerializer(serializers.ModelSerializer):
     """Serializer for movie model with director and actors"""
-    director = PersonSerializer(many=False, read_only=True)
+    director = PersonSerializer(many=False, allow_null=True, read_only=True)
     actors = PersonRoleSerializer(source='movieperson_set', many=True, read_only=True)
     class Meta:
         model = Movie

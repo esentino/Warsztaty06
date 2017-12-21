@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from .models import Movie, Person
 from .serializers import MovieSerializer, PersonSerializer
+from django.shortcuts import render
 
 
 class MoviesView(APIView):
@@ -90,7 +91,7 @@ class MovieView(APIView):
             movie_serializer.save()
             #zwracamy zaktualizowane informacje o filmie
             return Response(movie_serializer.data)
-        #Jak coś nie udało się zwalidować to zwracamy informacje o będzie
+        #Jak coś nie udało się zwalidować to zwracamy informacje o będzie-
         return Response(movie_serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class PersonView(APIView):
@@ -118,13 +119,15 @@ class PersonView(APIView):
         return Response(person_serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 class PersonsView(APIView):
+
     def get(self, request):
         all_movie = Person.objects.all()
         serialize_movie = PersonSerializer(all_movie, 
-                                          context={"request": request}, 
-                                          many=True)
+                                           context={"request": request},
+                                           many=True)
         return Response(serialize_movie.data)
-    
+
+
     def post(self, request):
         serialize_move = PersonSerializer(data=request.data)
         if serialize_move.is_valid():
@@ -150,3 +153,9 @@ class AssignDirectorMovie(APIView):
         movie.save()
         movie_serializer = MovieSerializer(movie, context={"request": request})
         return Response(movie_serializer.data)
+
+
+def dziwnyWidok(request):
+    person = Person.objects.get(pk=2)
+    movie = Movie.objects.filter(director=person).first()
+    return render(request, "index.html", {"movies": movie})
