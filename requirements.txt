@@ -1,0 +1,6 @@
+Django
+django-extensions
+djangorestframework
+mysqlclient
+pydotplus
+pylint
